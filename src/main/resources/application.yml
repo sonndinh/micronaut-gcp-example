@@ -1,0 +1,7 @@
+micronaut:
+  application:
+    name: micronaut-gcp-example
+  object-storage:
+    gcp:
+      default:
+        bucket: gcp-lab-bucket-1
