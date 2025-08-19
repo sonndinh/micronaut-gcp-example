@@ -2,9 +2,7 @@ package com.example;
 
 import com.google.cloud.storage.Blob;
 import io.micronaut.http.*;
-import io.micronaut.http.annotation.Controller;
-import io.micronaut.http.annotation.Get;
-import io.micronaut.http.annotation.Post;
+import io.micronaut.http.annotation.*;
 import io.micronaut.http.multipart.CompletedFileUpload;
 import io.micronaut.http.server.types.files.StreamedFile;
 import io.micronaut.http.server.util.HttpHostResolver;
@@ -17,7 +15,6 @@ import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 
 import java.net.URI;
-import java.util.Objects;
 import java.util.Optional;
 
 @Controller(UploadController.PREFIX)
@@ -49,6 +46,13 @@ public class UploadController {
         String key = buildKey(userId);
         return objectStorage.retrieve(key)
                 .map(UploadController::buildStreamedFile);
+    }
+
+    @Status(HttpStatus.NO_CONTENT)
+    @Delete("/{userId}")
+    public void delete(String userId) {
+        String key = buildKey(userId);
+        objectStorage.delete(key);
     }
 
     private static HttpResponse<StreamedFile> buildStreamedFile(GoogleCloudStorageEntry entry) {
