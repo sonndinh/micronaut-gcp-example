@@ -1,8 +1,0 @@
-application.name=micronaut-gcp-example
-#tag::object-storage[]
-micronaut.object-storage.gcp.default.bucket=gcp-lab-bucket-1
-#end::object-storage[]
-#tag::server-max-file-size[]
-# 20 * 1024 * 1024 = 20MB
-#micronaut.server.multipart.max-file-size=20971520
-#end::server-max-file-size[]

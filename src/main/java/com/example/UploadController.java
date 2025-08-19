@@ -4,7 +4,9 @@ import com.google.cloud.storage.Blob;
 import io.micronaut.http.HttpHeaders;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
 import io.micronaut.http.multipart.CompletedFileUpload;
 import io.micronaut.http.server.util.HttpHostResolver;
 import io.micronaut.http.uri.UriBuilder;
@@ -18,7 +20,7 @@ import java.net.URI;
 
 @Controller(UploadController.PREFIX)
 @ExecuteOn(TaskExecutors.BLOCKING)
-public class UploadController implements UploadInterface {
+public class UploadController {
 
     static final String PREFIX = "/documents";
 
@@ -30,7 +32,7 @@ public class UploadController implements UploadInterface {
         this.httpHostResolver = httpHostResolver;
     }
 
-    @Override
+    @Post(uri = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA)
     public HttpResponse<?> upload(CompletedFileUpload file, String userId, HttpRequest<?> request) {
         String key = buildKey(userId);
         UploadRequest objectStorageUpload = UploadRequest.fromCompletedFileUpload(file, key);
