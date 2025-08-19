@@ -1,15 +1,15 @@
 package com.example;
 
 import com.google.cloud.storage.Blob;
-import io.micronaut.http.HttpHeaders;
-import io.micronaut.http.HttpRequest;
-import io.micronaut.http.HttpResponse;
-import io.micronaut.http.MediaType;
+import io.micronaut.http.*;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.http.multipart.CompletedFileUpload;
+import io.micronaut.http.server.types.files.StreamedFile;
 import io.micronaut.http.server.util.HttpHostResolver;
 import io.micronaut.http.uri.UriBuilder;
+import io.micronaut.objectstorage.googlecloud.GoogleCloudStorageEntry;
 import io.micronaut.objectstorage.googlecloud.GoogleCloudStorageOperations;
 import io.micronaut.objectstorage.request.UploadRequest;
 import io.micronaut.objectstorage.response.UploadResponse;
@@ -17,6 +17,8 @@ import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
 
 import java.net.URI;
+import java.util.Objects;
+import java.util.Optional;
 
 @Controller(UploadController.PREFIX)
 @ExecuteOn(TaskExecutors.BLOCKING)
@@ -40,6 +42,23 @@ public class UploadController {
 
         return HttpResponse.created(location(request, userId))
                 .header(HttpHeaders.ETAG, response.getETag());
+    }
+
+    @Get("/{userId}")
+    Optional<HttpResponse<StreamedFile>> download(String userId) {
+        String key = buildKey(userId);
+        return objectStorage.retrieve(key)
+                .map(UploadController::buildStreamedFile);
+    }
+
+    private static HttpResponse<StreamedFile> buildStreamedFile(GoogleCloudStorageEntry entry) {
+        Blob nativeEntry = entry.getNativeEntry();
+        MediaType mediaType = MediaType.of(nativeEntry.getContentType());
+        StreamedFile file = new StreamedFile(entry.getInputStream(), mediaType).attach(entry.getKey());
+        MutableHttpResponse<Object> httpResponse = HttpResponse.ok()
+                .header(HttpHeaders.ETAG, nativeEntry.getEtag());
+        file.process(httpResponse);
+        return httpResponse.body(file);
     }
 
     private static String buildKey(String userId) {
